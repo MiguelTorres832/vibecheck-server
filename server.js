@@ -1,22 +1,22 @@
-const { PeerServer } = require('peer');
 const express = require('express');
+const { ExpressPeerServer } = require('peer');
 
 const app = express();
 
-// Health check so Glitch keeps the server alive
-app.get('/', (req, res) => res.send('VibeCheck signaling server is running ✓'));
+app.get('/', (req, res) => {
+  res.send('VibeCheck signaling server is running ✓');
+});
 
 const server = app.listen(process.env.PORT || 3000, () => {
   console.log('Server running on port', process.env.PORT || 3000);
 });
 
-// Mount PeerJS on /peerjs path
-const peerServer = PeerServer({
-  server,
-  path: '/peerjs',
+const peerServer = ExpressPeerServer(server, {
+  path: '/',
   allow_discovery: false,
-  proxied: true,
 });
+
+app.use('/peerjs', peerServer);
 
 peerServer.on('connection', client => {
   console.log('Peer connected:', client.getId());
